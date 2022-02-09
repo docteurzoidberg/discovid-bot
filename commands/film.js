@@ -178,6 +178,6 @@ module.exports = {
       .setThumbnail(result.remotePoster)
       .addFields(fields);
 
-    await interaction.reply({content: `Film: ${result.title}`, embeds: [movieEmbed], components: [row], ephemeral: false});
+    await interaction.reply({content: `Film: ${result.title}`, embeds: [movieEmbed], components: config.PERMIT_DL ? [row]:[], ephemeral: false});
 	},
 };
