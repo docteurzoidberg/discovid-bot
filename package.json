@@ -1,0 +1,23 @@
+{
+  "name": "bdv-bot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index",
+    "docker-build": "docker build -t drzoid:discovid-bot .",
+    "docker-run": "docker run -it --rm --init --mount type=bind,source=\"$(pwd)/db\",target=/db --name=discovid-bot drzoid:discovid-bot"
+  },
+  "author": "DrZoid",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@discordjs/rest": "^0.3.0",
+    "axios": "^0.25.0",
+    "discord-api-types": "^0.26.1",
+    "discord.js": "^13.6.0",
+    "imdb-api": "^4.4.1",
+    "node-themoviedb": "^0.2.8",
+    "sqlite": "^4.0.23",
+    "sqlite3": "^5.0.2"
+  }
+}

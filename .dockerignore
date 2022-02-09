@@ -1,0 +1,8 @@
+node_modules
+*.log
+*.sqlite
+*.md
+.gitignore
+.git
+credits.json
+credits-*.json 
