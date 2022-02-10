@@ -7,7 +7,7 @@ const client = new Client({
 	intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS],
 	partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
 	presence: {
-		status: 'invisible'
+		status: config.INVISIBLE ? 'invisible' : 'online',
 	}
 });
 
@@ -44,7 +44,7 @@ for (const file of commandFiles) {
 //handle process signals
 async function closeGracefully(signal) {
   console.log(`Received signal to terminate: ${signal}, closing`);
-  await db.close();
+  //await db.close();
   process.exit();
 }
 process.on('SIGINT', closeGracefully)
