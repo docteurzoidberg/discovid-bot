@@ -6,3 +6,5 @@ node_modules
 .git
 credits.json
 credits-*.json 
+config.*.json
+config-sample.json
