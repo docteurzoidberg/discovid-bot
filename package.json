@@ -15,9 +15,6 @@
     "axios": "^0.25.0",
     "discord-api-types": "^0.26.1",
     "discord.js": "^13.6.0",
-    "imdb-api": "^4.4.1",
-    "node-themoviedb": "^0.2.8",
-    "sqlite": "^4.0.23",
-    "sqlite3": "^5.0.2"
+    "node-themoviedb": "^0.2.8"
   }
 }
