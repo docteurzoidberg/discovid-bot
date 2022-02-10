@@ -2,7 +2,6 @@ const fs = require('fs');
 const { Client, Collection, Intents } = require('discord.js');
 
 const config = require("./config.json");
-const db = require('./db');
 
 const client = new Client({
 	intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS],
@@ -50,10 +49,6 @@ async function closeGracefully(signal) {
 }
 process.on('SIGINT', closeGracefully)
 process.on('SIGTERM', closeGracefully)
-
-//wait db connect
-db.connect();
-console.log('Db Connected');
 
 //start discord's bot
 client.login(config.BOT_TOKEN);
