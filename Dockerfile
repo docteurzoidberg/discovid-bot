@@ -20,5 +20,8 @@ RUN yarn install --production
 COPY --chown=node:node . .
 
 USER node
+
+RUN node register
+
 CMD ["dumb-init", "node", "index"]
 
