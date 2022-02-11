@@ -1,26 +1,39 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
+const { MessageActionRow, MessageButton, MessageEmbed, ReactionUserManager } = require('discord.js');
 const MovieDB = require('node-themoviedb');
 
 const wait = require('util').promisify(setTimeout);
 
 const radarr = require('../lib/radarr');
+const api = require('../lib/api');
 const config = require('../config.json');
-const fs = require('fs');
+const { kill } = require('process');
 
 const tmdb = new MovieDB(config.TMDB_API_KEY, {language : 'fr-FR'});
 
-const downloadButtonInterractionCollector = async (result, collector, i) => {
-  const onalefilm = result.hasFile;
-  const lien = "http://toto.com/jdslkjdlskjdlkjdlkjsldkjdlskjlskjdlkjm/film.mkv";
-  if(onalefilm) {
+const downloadButtonInterractionCollector = async (result, collector, i) => { 
+
+  //File already present. no need to download. generate link and send back to channel.
+  if(result.hasFile) {
     console.log('On a le film ! :)');
-    
+    //console.log(result);
+    const newlink = await api.addLink({
+      file: result.movieFile.path,
+      name: result.movieFile.relativePath,
+      size: result.movieFile.size,
+      type: result.type||'?',
+    });
+    if(!newlink) {
+      console.log('Error while adding link');
+      return;
+    }
+    const linkurl = encodeURI(newlink.url||config.EXTERNAL_URL+newlink.id+'/'+newlink.name);
+    console.log(linkurl);
     //Mise a jour du message original, avec les nouveaux boutons
     const buttonUrl = new MessageButton()
       .setLabel('LIEN')
       .setStyle('LINK')
-      .setURL(lien);
+      .setURL(linkurl);
 
     const rowAvailable = new MessageActionRow()
       .addComponents(
@@ -30,9 +43,10 @@ const downloadButtonInterractionCollector = async (result, collector, i) => {
     await i.message.edit({ embeds: i.message.embeds , components: [rowAvailable] });
 
     //Reponse a la demande de lien:
-    const response = `Lien de téléchargement: ${lien}`;
+    const response = `Lien de téléchargement: ${linkurl}`;
     await i.message.reply(response);
   } 
+  //File not already present. launch the download and warn the user about it. update message link when download is complete with the link
   else {
     console.log('On a pas le film ! :(');
 
@@ -56,6 +70,34 @@ const downloadButtonInterractionCollector = async (result, collector, i) => {
   
     //TODO: attendre la fin du telechargement pour envoyer la notification
     await wait(5000);
+    console.log('Fin du faux telechargement');
+
+    //fake result
+    result = {
+      title: result.title,
+      name: 'test.mkv',
+      file: '/path/to/test.mkv',
+      size: '1.2GB',
+      type: 'mkv',
+      hasFile: true
+    };
+    console.log(result);
+
+    const newlink = await api.addLink({
+      file: result.file,
+      name: result.name,
+      size: result.size,
+      type: result.type,
+    });
+    console.log(newlink);
+
+    if(!newlink) {
+      console.log('Error while adding link');
+      return;
+    }
+
+    const linkurl = encodeURI(newlink.url||config.EXTERNAL_URL+newlink.id+'/'+newlink.file);
+    console.log(linkurl);
     
     //Mise a jour du message original, avec les nouveaux boutons
     const buttonDownloaded = new MessageButton()
@@ -67,7 +109,7 @@ const downloadButtonInterractionCollector = async (result, collector, i) => {
     const buttonUrl = new MessageButton()
       .setLabel('LIEN')
       .setStyle('LINK')
-      .setURL(lien);
+      .setURL(linkurl);
 
     const rowDownloaded = new MessageActionRow()
     .addComponents(
@@ -78,6 +120,11 @@ const downloadButtonInterractionCollector = async (result, collector, i) => {
     await i.message.reply(`Télechargement de ${result.title} terminé, lien disponible !`); 
     collector.stop();
   }
+};
+const reactionInterractionCollector = async (result, collector, i) => {
+  console.log('Reaction !');
+  console.log(i.author.id);
+  console.log(i.emoji.name);
 };
 
 module.exports = {
@@ -107,6 +154,7 @@ module.exports = {
     });
     collector.on('end', collected => console.log(`Collected ${collected.size} items`));
 
+   
     //Response to command
     const button = new MessageButton()
       .setCustomId('getlink-' + result.imdbId)
@@ -144,7 +192,6 @@ module.exports = {
       };
       const movieTmdb = await tmdb.movie.getCredits(args);
       //console.log(movieTmdb);
-      fs.writeFileSync('./credits.json', JSON.stringify(movieTmdb, null, 2));
 
       const director = movieTmdb.data.crew.find((crew) => {
         return crew.job === 'Director';
@@ -178,6 +225,47 @@ module.exports = {
       .setThumbnail(result.remotePoster)
       .addFields(fields);
 
-    await interaction.reply({content: `Film: ${result.title}`, embeds: [movieEmbed], components: config.PERMIT_DL ? [row]:[], ephemeral: false});
+    const msg = await interaction.reply({content: `Film: ${result.title}`, embeds: [movieEmbed], components: config.PERMIT_DL ? [row]:[], ephemeral: false, fetchReply: true});
+    
+    //Reaction handling 
+    const filterReactions = (reaction) => {
+      console.log(reaction);
+      return true;
+    };
+
+    msg.awaitReactions({ filterReactions, time: 6000})
+      .then(collected => {
+        console.log(`Collected ${collected.size} reactions`);
+        const content = [];
+        const useremojis = [];
+        collected.forEach(reaction => {
+          //console.log(reaction);
+          reaction.users.fetch().then(users => {
+            users.forEach(user => {
+              if(!useremojis[user.id]) {
+                useremojis[user.id] = [];
+              }
+              useremojis[user.id].push(reaction.emoji.name);
+              //content.push(`${user.username} reacted with a ${reaction.emoji.name}`);
+            });
+            for(key in useremojis) {
+              const userid = key;
+              const emojis = useremojis[key];
+              content.push(`<${userid}> reacted with ${emojis.join('')}`);
+            }
+            msg.reply(content.join('\n'));
+          });
+        });
+
+        //
+      })
+      .catch(error => {
+        console.error(error);
+        //msg.reply('You reacted with neither a thumbs up, nor a thumbs down.');
+      });
+    //reactionsCollector.on('collect', async reactionInterration => {
+    //  return await reactionInterractionCollector(result, collector, reactionInterration);
+    //});
+    //reactionsCollector.on('end', collected => console.log(`Collected ${collected.size} reactions`));
 	},
 };

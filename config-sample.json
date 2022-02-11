@@ -1,4 +1,6 @@
 {
+    "PERMIT_DL": false,
+    "INVISIBLE": false,
     "BOT_TOKEN": "",
     "DISCORD_CLIENT_ID": "",
     "DISCORD_GUILD_ID": "",
@@ -6,5 +8,6 @@
     "JACKETT_API_KEY": "",
     "RADARR_URL": "http://localhost:7878/",
     "RADARR_API_KEY": "",
-    "TMDB_API_KEY": ""
+    "TMDB_API_KEY": "",
+    "DISCOVID_API_URL": "http://localhost:3000/"
 }
