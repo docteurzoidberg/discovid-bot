@@ -193,14 +193,14 @@ module.exports = {
       .setLabel('Obtenir un lien de telechargement')
       .setStyle('PRIMARY');
 
-    const btnYgg = new MessageButton()
-      .setLabel('YGGTORRENT')
-      .setStyle('LINK')
-      .setURL('http://www.perdu.com');
+    //const btnYgg = new MessageButton()
+    //  .setLabel('YGGTORRENT')
+    //  .setStyle('LINK')
+    //  .setURL('http://www.perdu.com');
     
     const row = new MessageActionRow()
       .addComponents(
-        button, btnYgg
+        button
       );
     
     var fields = [];
