@@ -5,6 +5,8 @@ ENV NODE_ENV production
 ENV LANG C.UTF-8
 ENV EDITOR nano
 
+RUN mkdir -p /data
+RUN chown -R node:node /data
 # Create app directory
 WORKDIR /discovid
 

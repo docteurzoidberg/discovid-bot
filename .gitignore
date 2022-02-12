@@ -5,3 +5,4 @@ yarn-error.log
 credits.json
 credits-*.json
 db/sqlite.db
+data
