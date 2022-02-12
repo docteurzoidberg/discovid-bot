@@ -7,6 +7,7 @@ const watch = require('../lib/watch');
 const radarr = require('../lib/radarr');
 const api = require('../lib/api');
 const config = require('../config.json');
+const crypto = require("crypto");
 //const fs = require('fs');
 
 const tmdb = new MovieDB(config.TMDB_API_KEY, {language : 'fr-FR'});
@@ -176,7 +177,9 @@ module.exports = {
     //console.log(result);
 
     //Button handling
-    const filter = i => i.isButton() && i.customId == 'getlink-' + result.imdbId;
+ 
+    var randomid = crypto.randomBytes(20).toString('hex');
+    const filter = i => i.isButton() && i.customId == 'getlink-' + result.imdbId + '-' + randomid;
     const collector = interaction.channel.createMessageComponentCollector({filter});
     collector.on('collect', async i => {
       return await downloadButtonInterractionCollector(result, collector, i);
