@@ -178,8 +178,8 @@ module.exports = {
 
     //Button handling
  
-    var randomid = crypto.randomBytes(20).toString('hex');
-    const filter = i => i.isButton() && i.customId == 'getlink-' + result.imdbId + '-' + randomid;
+    const randomid = crypto.randomBytes(20).toString('hex');
+    const filter = i => i.isButton() && (i.customId == 'getlink-' + result.imdbId + '-' + randomid);
     const collector = interaction.channel.createMessageComponentCollector({filter});
     collector.on('collect', async i => {
       return await downloadButtonInterractionCollector(result, collector, i);
@@ -189,7 +189,7 @@ module.exports = {
    
     //Response to command
     const button = new MessageButton()
-      .setCustomId('getlink-' + result.imdbId)
+      .setCustomId('getlink-' + result.imdbId + '-' + randomid)
       .setLabel('Obtenir un lien de telechargement')
       .setStyle('PRIMARY');
 
