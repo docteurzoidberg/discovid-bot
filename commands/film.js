@@ -3,11 +3,11 @@ const { MessageActionRow, MessageButton, MessageEmbed, ReactionUserManager } = r
 const MovieDB = require('node-themoviedb');
 
 const wait = require('util').promisify(setTimeout);
-
+const watch = require('../lib/watch');
 const radarr = require('../lib/radarr');
 const api = require('../lib/api');
 const config = require('../config.json');
-const { kill } = require('process');
+//const fs = require('fs');
 
 const tmdb = new MovieDB(config.TMDB_API_KEY, {language : 'fr-FR'});
 
@@ -63,62 +63,90 @@ const downloadButtonInterractionCollector = async (result, collector, i) => {
     );
     await i.message.edit({ embeds: i.message.embeds , components: [rowDownloading] });
     
+    //Previens l'utilisateur de la mise en telechargement
     const response = `<@${i.member.id}> > Je met le film a télécharger. je te previendrai quand ce sera fini !`;
     await i.channel.send(response);    
     
-    //TODO: mettre le film a telecharger
-  
-    //TODO: attendre la fin du telechargement pour envoyer la notification
-    await wait(5000);
-    console.log('Fin du faux telechargement');
+    //Mettre le film a telecharger
 
-    //fake result
-    result = {
-      title: result.title,
-      name: 'test.mkv',
-      file: '/path/to/test.mkv',
-      size: '1.2GB',
-      type: 'mkv',
-      hasFile: true
-    };
-    console.log(result);
-
-    const newlink = await api.addLink({
-      file: result.file,
-      name: result.name,
-      size: result.size,
-      type: result.type,
-    });
-    console.log(newlink);
-
-    if(!newlink) {
-      console.log('Error while adding link');
-      return;
+    var movieid = 0;
+    if(result.id && result.id>0) {
+      console.error('Already added: ' + result.id);
+      movieid = result.id;
+    } 
+    else {
+        const addedMovie = await radarr.addMovie(result); 
+        console.log(addedMovie);
+        if(!addedMovie) {
+            console.log('No movie added');
+            return;
+        }
+        movieid = addedMovie.id;
     }
 
-    const linkurl = encodeURI(newlink.url||config.EXTERNAL_URL+newlink.id+'/'+newlink.file);
-    console.log(linkurl);
-    
-    //Mise a jour du message original, avec les nouveaux boutons
-    const buttonDownloaded = new MessageButton()
-      .setCustomId('downloaded')
-      .setLabel('Téléchargement terminé')
-      .setStyle('SUCCESS')
-      .setDisabled(true);
+    //attendre le telechargement
 
-    const buttonUrl = new MessageButton()
-      .setLabel('LIEN')
-      .setStyle('LINK')
-      .setURL(linkurl);
+    watch.on('started', function() {
+      console.log(`watcher started`);
+    });
+    watch.on('added', function(movieId) {
+      console.log(`${movieId} added`);
+    });
+    watch.on('removed', function(movieId) {
+      console.log(`${movieId} removed`);
+    });
+    watch.on('downloaded', async function(movieId, ctx) {
+      watch.stop();
+      console.log(`${movieId} downloaded`);
+      if(movieid==movieId) {
+        console.log('BOT> Movie is Downloaded !');
+      }
 
-    const rowDownloaded = new MessageActionRow()
-    .addComponents(
-      buttonDownloaded, buttonUrl
-    );
-    await i.message.edit({ embeds: i.message.embeds , components: [rowDownloaded] });
+      //debug
+      //fs.writeFileSync('./tmp.json', JSON.stringify(ctx));
 
-    await i.message.reply(`Télechargement de ${result.title} terminé, lien disponible !`); 
-    collector.stop();
+      //Creation du lien de partage
+      const newlink = await api.addLink({
+        file: ctx.movieFile.path,
+        name: ctx.movieFile.relativePath,
+        size: ctx.movieFile.size,
+        type: ctx.type||'?',
+      });
+      console.log(newlink);
+      if(!newlink) {
+        console.log('Error while adding link');
+        return;
+      }
+
+      //Encoding pour discord
+      const linkurl = encodeURI(newlink.url||config.EXTERNAL_URL+newlink.id+'/'+newlink.name);
+      console.log(linkurl);
+      
+      //Mise a jour du message original, avec les nouveaux boutons
+      const buttonDownloaded = new MessageButton()
+        .setCustomId('downloaded')
+        .setLabel('Téléchargement terminé')
+        .setStyle('SUCCESS')
+        .setDisabled(true);
+
+      const buttonUrl = new MessageButton()
+        .setLabel('LIEN')
+        .setStyle('LINK')
+        .setURL(linkurl);
+
+      const rowDownloaded = new MessageActionRow()
+      .addComponents(
+        buttonDownloaded, buttonUrl
+      );
+      await i.message.edit({ embeds: i.message.embeds , components: [rowDownloaded] });
+
+      await i.message.reply(`Télechargement de ${result.title} terminé, lien disponible !`); 
+      collector.stop();
+    });
+
+    result.id = movieid;
+    watch.add(movieid, result);
+    watch.start();
   }
 };
 const reactionInterractionCollector = async (result, collector, i) => {
