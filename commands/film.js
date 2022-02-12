@@ -45,6 +45,7 @@ const downloadButtonInterractionCollector = async (result, collector, i) => {
     //Reponse a la demande de lien:
     const response = `Lien de téléchargement: ${linkurl}`;
     await i.message.reply(response);
+    collector.stop();
   } 
   //File not already present. launch the download and warn the user about it. update message link when download is complete with the link
   else {
