@@ -3,12 +3,11 @@ const { MessageActionRow, MessageButton, MessageEmbed, ReactionUserManager } = r
 const MovieDB = require('node-themoviedb');
 
 const wait = require('util').promisify(setTimeout);
-const watch = require('../lib/watch');
+const watcher = require('../lib/watch');
 const radarr = require('../lib/radarr');
 const api = require('../lib/api');
 const config = require('../config.json');
 const crypto = require("crypto");
-//const fs = require('fs');
 
 const tmdb = new MovieDB(config.TMDB_API_KEY, {language : 'fr-FR'});
 
@@ -86,16 +85,16 @@ const downloadButtonInterractionCollector = async (result, collector, i) => {
         movieid = addedMovie.id;
     }
 
-    //attendre le telechargement
+    result.id = movieid;
 
-    watch.on('started', function() {
-      console.log(`watcher started`);
+    //attendre le telechargement
+    const watch = watcher(movieid, result);
+
+    watch.on('started', function(movieId) {
+      console.log(`watcher started for ${movieId}`);
     });
-    watch.on('added', function(movieId) {
-      console.log(`${movieId} added`);
-    });
-    watch.on('removed', function(movieId) {
-      console.log(`${movieId} removed`);
+    watch.on('stoped', function(movieId) {
+      console.log(`watcher stopped for ${movieId}`);
     });
     watch.on('downloaded', async function(movieId, ctx) {
       watch.stop();
@@ -146,8 +145,6 @@ const downloadButtonInterractionCollector = async (result, collector, i) => {
       collector.stop();
     });
 
-    result.id = movieid;
-    watch.add(movieid, result);
     watch.start();
   }
 };
