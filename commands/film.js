@@ -53,7 +53,7 @@ const downloadButtonInterractionCollector = async (result, collector, i) => {
 
     //Mise a jour du message original, avec les nouveaux boutons
     const buttonDownloading = new MessageButton()
-      .setCustomId('waitdownloadlink-'+ result.movieFile.id)
+      .setCustomId('waitdownloadlink')
       .setLabel('Téléchargement en cours...')
       .setStyle('SECONDARY')
       .setDisabled(true);
