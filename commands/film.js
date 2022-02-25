@@ -53,7 +53,7 @@ const downloadButtonInterractionCollector = async (result, collector, i) => {
 
     //Mise a jour du message original, avec les nouveaux boutons
     const buttonDownloading = new MessageButton()
-      //.setCustomId('waitdownloadlink')
+      .setCustomId('waitdownloadlink-'+ result.movieFile.id)
       .setLabel('Téléchargement en cours...')
       .setStyle('SECONDARY')
       .setDisabled(true);
@@ -189,11 +189,6 @@ module.exports = {
       .setCustomId('getlink-' + result.imdbId + '-' + randomid)
       .setLabel('Obtenir un lien de telechargement')
       .setStyle('PRIMARY');
-
-    //const btnYgg = new MessageButton()
-    //  .setLabel('YGGTORRENT')
-    //  .setStyle('LINK')
-    //  .setURL('http://www.perdu.com');
     
     const row = new MessageActionRow()
       .addComponents(
