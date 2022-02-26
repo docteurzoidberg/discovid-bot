@@ -6,7 +6,7 @@ const config = require('../config.json');
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('auth')
+		.setName('login')
 		.setDescription('Cree le cookie d\'auth sur le navigateur pour les services discovid!'),
 	
   async execute(client, interaction) {
@@ -24,7 +24,7 @@ module.exports = {
     }
 
     //Encoding pour discord
-    const linkurl = encodeURI(newlink.url||config.EXTERNAL_URL+newlink.id+'/'+newlink.name);
+    const linkurl = encodeURI(newlink.url||config.EXTERNAL_URL+'login/'+newlink.token);
     console.log(linkurl);
     
     const buttonUrl = new MessageButton()

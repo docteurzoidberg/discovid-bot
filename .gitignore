@@ -6,3 +6,5 @@ credits.json
 credits-*.json
 db/sqlite.db
 data
+.env
+.env.*
