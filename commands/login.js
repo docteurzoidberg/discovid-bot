@@ -2,7 +2,6 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageActionRow, MessageButton } = require('discord.js');
 
 const api = require('../lib/api');
-const config = require('../config.json');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -24,7 +23,7 @@ module.exports = {
     }
 
     //Encoding pour discord
-    const linkurl = encodeURI(newlink.url||config.EXTERNAL_URL+'login/'+newlink.token);
+    const linkurl = encodeURI(newlink.url+'login/'+newlink.token);
     console.log(linkurl);
     
     const buttonUrl = new MessageButton()

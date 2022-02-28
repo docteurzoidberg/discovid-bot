@@ -1,10 +1,11 @@
-const config = require('../config.json');
+require('dotenv').config();
+const INVISIBLE = process.env.INVISIBLE === 'true';
 module.exports = {
 	name: 'ready',
 	once: true,
 	execute(client) {
 		console.log(`Ready! Logged in as ${client.user.tag}`);
-		if(config.INVISIBLE) {
+		if(INVISIBLE) {
 			client.user.setStatus('invisible');
 		}
 	},

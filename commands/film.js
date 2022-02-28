@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageActionRow, MessageButton, MessageEmbed, ReactionUserManager } = require('discord.js');
 const MovieDB = require('node-themoviedb');
@@ -6,10 +8,14 @@ const wait = require('util').promisify(setTimeout);
 const watcher = require('../lib/watch');
 const radarr = require('../lib/radarr');
 const api = require('../lib/api');
-const config = require('../config.json');
+
 const crypto = require("crypto");
 
-const tmdb = new MovieDB(config.TMDB_API_KEY, {language : 'fr-FR'});
+const TMDB_API_KEY = process.env.TMDB_API_KEY || '';
+const EXTERNAL_URL = process.env.EXTERNAL_URL || 'localhost:3000';
+const PERMIT_DL = process.env.PERMIT_DL === 'true';
+
+const tmdb = new MovieDB(TMDB_API_KEY, {language : 'fr-FR'});
 
 const downloadButtonInterractionCollector = async (result, collector, i) => { 
 
@@ -27,7 +33,7 @@ const downloadButtonInterractionCollector = async (result, collector, i) => {
       console.log('Error while adding link');
       return;
     }
-    const linkurl = encodeURI(newlink.url||config.EXTERNAL_URL+newlink.id+'/'+newlink.name);
+    const linkurl = encodeURI(newlink.url||EXTERNAL_URL+newlink.id+'/'+newlink.name);
     console.log(linkurl);
     //Mise a jour du message original, avec les nouveaux boutons
     const buttonUrl = new MessageButton()
@@ -120,7 +126,7 @@ const downloadButtonInterractionCollector = async (result, collector, i) => {
       }
 
       //Encoding pour discord
-      const linkurl = encodeURI(newlink.url||config.EXTERNAL_URL+newlink.id+'/'+newlink.name);
+      const linkurl = encodeURI(newlink.url||EXTERNAL_URL+newlink.id+'/'+newlink.name);
       console.log(linkurl);
       
       //Mise a jour du message original, avec les nouveaux boutons
@@ -249,7 +255,7 @@ module.exports = {
       .setThumbnail(result.remotePoster)
       .addFields(fields);
 
-    const msg = await interaction.reply({content: `Film: ${result.title}`, embeds: [movieEmbed], components: config.PERMIT_DL ? [row]:[], ephemeral: false, fetchReply: true});
+    const msg = await interaction.reply({content: `Film: ${result.title}`, embeds: [movieEmbed], components: PERMIT_DL ? [row]:[], ephemeral: false, fetchReply: true});
     
     //Reaction handling 
     const filterReactions = (reaction) => {

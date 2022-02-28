@@ -1,13 +1,21 @@
+require('dotenv').config();
+
 const fs = require('fs');
 const { Client, Collection, Intents } = require('discord.js');
 
-const config = require("./config.json");
+const BOT_INVISIBLE = process.env.BOT_INVISIBLE ==='true';
+const BOT_TOKEN = process.env.BOT_TOKEN || false;
+
+if(!BOT_TOKEN) {
+    console.error('BOT_TOKEN environment variable not set');
+    process.exit(1);
+}
 
 const client = new Client({
 	intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS],
 	partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
 	presence: {
-		status: config.INVISIBLE ? 'invisible' : 'online',
+		status: BOT_INVISIBLE ? 'invisible' : 'online',
 	}
 });
 
@@ -51,4 +59,4 @@ process.on('SIGINT', closeGracefully)
 process.on('SIGTERM', closeGracefully)
 
 //start discord's bot
-client.login(config.BOT_TOKEN);
+client.login(BOT_TOKEN);

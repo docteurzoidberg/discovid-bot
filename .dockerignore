@@ -9,3 +9,5 @@ credits.json
 credits-*.json 
 config.*.json
 config-sample.json
+.env.*
+.env
