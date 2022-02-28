@@ -1,7 +1,9 @@
+require('dotenv').config();
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageActionRow, MessageButton } = require('discord.js');
 
 const api = require('../lib/api');
+const EXTERNAL_AUTH_URL = process.env.EXTERNAL_AUTH_URL || 'http://localhost:5000/';
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -23,7 +25,7 @@ module.exports = {
     }
 
     //Encoding pour discord
-    const linkurl = encodeURI(newlink.url+'login/'+newlink.token);
+    const linkurl = encodeURI(EXTERNAL_AUTH_URL+'login/'+newlink.token);
     console.log(linkurl);
     
     const buttonUrl = new MessageButton()

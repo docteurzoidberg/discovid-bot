@@ -3,7 +3,7 @@ require('dotenv').config();
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageActionRow, MessageButton } = require('discord.js');
 
-const EXTERNAL_AUTH_URL = process.env.EXTERNAL_AUTH_URL || 'localhost:5000';
+const EXTERNAL_AUTH_URL = process.env.EXTERNAL_AUTH_URL || 'http://localhost:5000/';
 
 module.exports = {
 	data: new SlashCommandBuilder()

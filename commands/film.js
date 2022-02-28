@@ -4,7 +4,6 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageActionRow, MessageButton, MessageEmbed, ReactionUserManager } = require('discord.js');
 const MovieDB = require('node-themoviedb');
 
-const wait = require('util').promisify(setTimeout);
 const watcher = require('../lib/watch');
 const radarr = require('../lib/radarr');
 const api = require('../lib/api');
@@ -109,9 +108,6 @@ const downloadButtonInterractionCollector = async (result, collector, i) => {
         console.log('BOT> Movie is Downloaded !');
       }
 
-      //debug
-      //fs.writeFileSync('./tmp.json', JSON.stringify(ctx));
-
       //Creation du lien de partage
       const newlink = await api.addLink({
         file: ctx.movieFile.path,
@@ -189,7 +185,6 @@ module.exports = {
     });
     collector.on('end', collected => console.log(`Collected ${collected.size} items`));
 
-   
     //Response to command
     const button = new MessageButton()
       .setCustomId('getlink-' + result.imdbId + '-' + randomid)
