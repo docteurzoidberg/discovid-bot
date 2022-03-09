@@ -70,7 +70,7 @@ const downloadButtonInterractionCollector = async (result, collector, i) => {
     await i.message.edit({ embeds: i.message.embeds , components: [rowDownloading] });
     
     //Previens l'utilisateur de la mise en telechargement
-    const response = `<@${i.member.id}> > Je met le film a télécharger. je te previendrai quand ce sera fini !`;
+    const response = `<@${i.member.id}> > Je mets le film a télécharger. je te préviendrais quand ce sera fini !`;
     await i.channel.send(response);    
     
     //Mettre le film a telecharger
@@ -142,18 +142,12 @@ const downloadButtonInterractionCollector = async (result, collector, i) => {
         buttonDownloaded, buttonUrl
       );
       await i.message.edit({ embeds: i.message.embeds , components: [rowDownloaded] });
-
       await i.message.reply(`Télechargement de ${result.title} terminé, lien disponible !`); 
       collector.stop();
     });
 
     watch.start();
   }
-};
-const reactionInterractionCollector = async (result, collector, i) => {
-  console.log('Reaction !');
-  console.log(i.author.id);
-  console.log(i.emoji.name);
 };
 
 module.exports = {
@@ -237,7 +231,6 @@ module.exports = {
       if(actorsLimited.length>0) {
         fields.push({ name: 'Acteurs', value: actorsLimited.join(', '), inline: true});
       }
-
     } catch (error) {
       console.error(error);
     }
@@ -252,45 +245,14 @@ module.exports = {
 
     const msg = await interaction.reply({content: `Film: ${result.title}`, embeds: [movieEmbed], components: PERMIT_DL ? [row]:[], ephemeral: false, fetchReply: true});
     
-    //Reaction handling 
-    const filterReactions = (reaction) => {
-      console.log(reaction);
-      return true;
-    };
-
-    msg.awaitReactions({ filterReactions, time: 6000})
-      .then(collected => {
-        console.log(`Collected ${collected.size} reactions`);
-        const content = [];
-        const useremojis = [];
-        collected.forEach(reaction => {
-          //console.log(reaction);
-          reaction.users.fetch().then(users => {
-            users.forEach(user => {
-              if(!useremojis[user.id]) {
-                useremojis[user.id] = [];
-              }
-              useremojis[user.id].push(reaction.emoji.name);
-              //content.push(`${user.username} reacted with a ${reaction.emoji.name}`);
-            });
-            for(key in useremojis) {
-              const userid = key;
-              const emojis = useremojis[key];
-              content.push(`<${userid}> reacted with ${emojis.join('')}`);
-            }
-            msg.reply(content.join('\n'));
-          });
-        });
-
-        //
-      })
-      .catch(error => {
-        console.error(error);
-        //msg.reply('You reacted with neither a thumbs up, nor a thumbs down.');
-      });
-    //reactionsCollector.on('collect', async reactionInterration => {
-    //  return await reactionInterractionCollector(result, collector, reactionInterration);
-    //});
-    //reactionsCollector.on('end', collected => console.log(`Collected ${collected.size} reactions`));
+    const reactions = await api.getReactions({movieId: result.imdbId.replace('tt', '')});
+    console.log(reactions);
+    if(reactions && reactions.length>0) {
+      const reactionsContent = [];
+      reactions.forEach((reaction) => {
+        reactionsContent.push(`${reaction.user.username}> ${reaction.reaction}`);
+      });   
+      msg.channel.send({content: reactionsContent.join('\n'), ephemeral: false, fetchReply: false});
+    }
 	},
 };

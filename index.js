@@ -22,16 +22,8 @@ const client = new Client({
 client.commands = new Collection();
 client.buttons = new Collection();
 
-const buttonFiles = fs.readdirSync('./buttons').filter(file => file.endsWith('.js'));
 const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-
-for (const file of buttonFiles) {
-	const button = require(`./buttons/${file}`);
-	// Set a new item in the Collection
-	// With the key as the command name and the value as the exported module
-	client.buttons.set(button.data.name, button);
-}
 
 for (const file of eventFiles) {
 	const event = require(`./events/${file}`);
@@ -52,7 +44,6 @@ for (const file of commandFiles) {
 //handle process signals
 async function closeGracefully(signal) {
   console.log(`Received signal to terminate: ${signal}, closing`);
-  //await db.close();
   process.exit();
 }
 process.on('SIGINT', closeGracefully)
