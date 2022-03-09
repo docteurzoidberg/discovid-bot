@@ -12,6 +12,7 @@ ENV BOT_TOKEN $BOT_TOKEN
 ENV NODE_ENV production
 ENV LANG C.UTF-8
 ENV EDITOR nano
+ENV DATA_PATH /data
 
 RUN mkdir -p /data
 RUN chown -R node:node /data
