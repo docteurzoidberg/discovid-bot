@@ -252,7 +252,7 @@ module.exports = {
         if(reaction.emoji && reaction.reaction) {
           reactionsContent.push(`${reaction.emoji} "${reaction.reaction}" -<@${reaction.user.id}>`);
         } else if (reaction.reaction) {
-          reactionsContent.push(`${reaction.reaction} -<@${reaction.user.id}>`);
+          reactionsContent.push(`"${reaction.reaction}" -<@${reaction.user.id}>`);
         } else if (reaction.emoji) {
           reactionsContent.push(`${reaction.emoji} -<@${reaction.user.id}>`);
         }
