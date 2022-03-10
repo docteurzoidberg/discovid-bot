@@ -165,7 +165,6 @@ module.exports = {
       console.log(`Aucun film trouvé pour ${terms}`);
       return interaction.reply({content: `Aucun film trouvé pour ${terms}`, ephemeral: true});;
     }
-
     const result = movies[0];
     //console.log(result);
 
@@ -250,7 +249,13 @@ module.exports = {
     if(reactions && reactions.length>0) {
       const reactionsContent = [];
       reactions.forEach((reaction) => {
-        reactionsContent.push(`${reaction.user.username}> ${reaction.reaction}`);
+        if(reaction.emoji && reaction.reaction) {
+          reactionsContent.push(`${reaction.emoji} "${reaction.reaction}" -<@${reaction.user.id}>`);
+        } else if (reaction.reaction) {
+          reactionsContent.push(`${reaction.reaction} -<@${reaction.user.id}>`);
+        } else if (reaction.emoji) {
+          reactionsContent.push(`${reaction.emoji} -<@${reaction.user.id}>`);
+        }
       });   
       msg.channel.send({content: reactionsContent.join('\n'), ephemeral: false, fetchReply: false});
     }

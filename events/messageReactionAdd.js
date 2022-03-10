@@ -15,9 +15,11 @@ module.exports = {
 				return;
 			}
 		}
-		
 		// Now the message has been cached and is fully available
+		
 		if(!reaction.message.author.bot) 
+			return;
+		if(!reaction.message.embeds || reaction.message.embeds.length<1)
 			return;
 
 		console.log(`${reaction.message.author}'s message "${reaction.message.content}" gained a reaction!`);
@@ -25,21 +27,20 @@ module.exports = {
 		console.log(`${reaction.count} user(s) have given the same reaction to this message!`);
 		
 		//imdbid?
-		//console.log(reaction.message.embeds);
 		const match = reaction.message.embeds[0].url.match(/title\/tt(.*)/);
 		if(!match || match.lenght<2) {
-			//console.log('No imdbid found');
+			console.log('No imdbid found');
 			return;
 		}
 		
-		const imdbid = reaction.message.embeds[0].url.match(/title\/tt(.*)/)[1];
+		const imdbid = match[1];
 		console.log(imdbid);
 		try {
 			const newReactions = [];
 			const users = await reaction.users.fetch();
 			console.log(users);
  			users.map(u => {
-				newReactions.push({user: u, reaction: reaction.emoji.name});
+				newReactions.push({user: u, emoji: reaction.emoji.name});
 			});
 			console.log(newReactions);
 			const data = await api.addReactions({

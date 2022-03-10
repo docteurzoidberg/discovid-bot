@@ -18,7 +18,6 @@ module.exports = {
             return;     
 
         if(!referenceMessage.embeds || referenceMessage.embeds.length < 1) {
-            console.log('no embed in reference message');
             return;
         }
         
@@ -30,7 +29,6 @@ module.exports = {
         }
         const imdbId = match[1];
         console.log(`message reference movie id : ${imdbId}`);
-        //const reactions = await api.getReactions({movieId: imdbId});
         const newReactions = [];
         newReactions.push({user: message.author, reaction: message.content});
         await api.addReactions({movieId: imdbId, reactions: newReactions});
