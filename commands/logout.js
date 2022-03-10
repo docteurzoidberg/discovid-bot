@@ -8,7 +8,7 @@ const EXTERNAL_AUTH_URL = process.env.EXTERNAL_AUTH_URL || 'http://localhost:500
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('logout')
-		.setDescription('Detruit le cookie d\'auth sur le navigateur pour les services discovid!'),
+		.setDescription('Détruit le cookie d\'auth sur le navigateur pour les services DiscoVID!'),
 	
   async execute(client, interaction) {
     
@@ -26,6 +26,6 @@ module.exports = {
       buttonUrl
     );
 
-    await interaction.reply({content: `Autentification discovid !\nCliquez sur le bouton logout pour détruire le cookie navigateur`, components: [row], ephemeral: true});
+    await interaction.reply({content: `Autentification DiscoVID !\nCliquez sur le bouton logout pour détruire le cookie navigateur`, components: [row], ephemeral: true});
 	},
 };
