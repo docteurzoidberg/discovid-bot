@@ -16,6 +16,86 @@ const PERMIT_DL = process.env.PERMIT_DL === 'true';
 
 const tmdb = new MovieDB(TMDB_API_KEY, {language : 'fr-FR'});
 
+//'👍', '👎' buttons
+const makeUniqueThumbsUpButton = (movieResult, interaction) => {
+  const randomId = crypto.randomBytes(20).toString('hex');
+  const buttonId = `thumbsup-' + ${movieResult.imdbId} + '-' + ${randomId}`;
+  const uniqueThumbsUpButtonFilter = filterInteraction => filterInteraction.isButton() && (filterInteraction.customId == buttonId);
+  const uniqueThumbsUpButtonCollector = interaction.channel.createMessageComponentCollector({filter: uniqueThumbsUpButtonFilter});
+  uniqueThumbsUpButtonCollector.on('collect', async collectorInteraction => {
+    return await thumbsUpButtonInterractionCollector(movieResult, uniqueThumbsUpButtonCollector, collectorInteraction);
+  });
+  uniqueThumbsUpButtonCollector.on('end', collected => console.log(`Collected ${collected.size} items`));
+  
+  const thumbsUpButton = new MessageButton()
+    .setCustomId(buttonId)
+    .setLabel('')
+    .setEmoji('👍')
+    .setStyle('SECONDARY');
+
+  return thumbsUpButton;
+}
+
+const thumbsUpButtonInterractionCollector = async (result, collector, interaction) => {
+  //console.log('Thumbs up');
+  const imdbId = result.imdbId.replace('tt','');
+  const reaction = { user: interaction.user, emoji: '👍' };
+  try {
+    await api.addReactions({
+      movieId: imdbId,
+      reactions: [reaction]
+    });
+    api.removeEmoji({
+      movieId: imdbId,
+      userId: interaction.user.id,
+      emoji: '👎'
+    });
+    interaction.message.reply(`<@${interaction.user.id}>> Merci pour l'avis, c'est noté !`);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const makeUniqueThumbsDownButton = (movieResult, interaction) => {
+  const randomId = crypto.randomBytes(20).toString('hex');
+  const buttonId = `thumbsdown-' + ${movieResult.imdbId} + '-' + ${randomId}`;
+  const uniqueThumbsDownButtonFilter = filterInteraction => filterInteraction.isButton() && (filterInteraction.customId == buttonId);
+  const uniqueThumbsDownButtonCollector = interaction.channel.createMessageComponentCollector({filter: uniqueThumbsDownButtonFilter});
+  uniqueThumbsDownButtonCollector.on('collect', async collectorInteraction => {
+    return await thumbsDownButtonInterractionCollector(movieResult, uniqueThumbsDownButtonCollector, collectorInteraction);
+  });
+  uniqueThumbsDownButtonCollector.on('end', collected => console.log(`Collected ${collected.size} items`));
+  
+  const thumbsDownButton = new MessageButton()
+    .setCustomId(buttonId)
+    .setLabel('')
+    .setEmoji('👎')
+    .setStyle('SECONDARY');
+
+  return thumbsDownButton;
+}
+
+const thumbsDownButtonInterractionCollector = async (result, collector, interaction) => {
+  //console.log('Thumbs down');
+  const imdbId = result.imdbId.replace('tt','');
+  const reaction = { user: interaction.user, emoji: '👎' };
+  try {
+    await api.addReactions({
+      movieId: imdbId,
+      reactions: [reaction]
+    });
+    api.removeEmoji({
+      movieId: imdbId,
+      userId: interaction.user.id,
+      emoji: '👍'
+    });
+    interaction.message.reply(`<@${interaction.user.id}>> Merci pour l'avis, c'est noté !`);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+//'download' button
 const downloadButtonInterractionCollector = async (result, collector, i) => { 
 
   //File already present. no need to download. generate link and send back to channel.
@@ -34,15 +114,22 @@ const downloadButtonInterractionCollector = async (result, collector, i) => {
     }
     const linkurl = encodeURI(newlink.url||EXTERNAL_URL+newlink.id+'/'+newlink.name);
     console.log(linkurl);
+
     //Mise a jour du message original, avec les nouveaux boutons
+    
+    //'LIEN'
     const buttonUrl = new MessageButton()
       .setLabel('LIEN')
       .setStyle('LINK')
       .setURL(linkurl);
 
+    //'👍', '👎'
+    const thumbsUpButton = makeUniqueThumbsUpButton(result, i);
+    const thumbsDownButton = makeUniqueThumbsDownButton(result, i);
+
     const rowAvailable = new MessageActionRow()
       .addComponents(
-        buttonUrl
+        buttonUrl, thumbsUpButton, thumbsDownButton
       );
 
     await i.message.edit({ embeds: i.message.embeds , components: [rowAvailable] });
@@ -62,6 +149,8 @@ const downloadButtonInterractionCollector = async (result, collector, i) => {
       .setLabel('Téléchargement en cours...')
       .setStyle('SECONDARY')
       .setDisabled(true);
+    
+    
 
     const rowDownloading = new MessageActionRow()
     .addComponents(
@@ -137,9 +226,13 @@ const downloadButtonInterractionCollector = async (result, collector, i) => {
         .setStyle('LINK')
         .setURL(linkurl);
 
+      //'👍', '👎'
+      const thumbsUpButton = makeUniqueThumbsUpButton(result, i);
+      const thumbsDownButton = makeUniqueThumbsDownButton(result, i);
+
       const rowDownloaded = new MessageActionRow()
       .addComponents(
-        buttonDownloaded, buttonUrl
+        buttonDownloaded, buttonUrl, thumbsUpButton, thumbsDownButton
       );
       await i.message.edit({ embeds: i.message.embeds , components: [rowDownloaded] });
       await i.message.reply(`Télechargement de ${result.title} terminé, lien disponible !`); 
@@ -168,27 +261,33 @@ module.exports = {
     const result = movies[0];
     //console.log(result);
 
-    //Button handling
- 
+    //Message buttons
     const randomid = crypto.randomBytes(20).toString('hex');
-    const filter = i => i.isButton() && (i.customId == 'getlink-' + result.imdbId + '-' + randomid);
-    const collector = interaction.channel.createMessageComponentCollector({filter});
-    collector.on('collect', async i => {
-      return await downloadButtonInterractionCollector(result, collector, i);
-    });
-    collector.on('end', collected => console.log(`Collected ${collected.size} items`));
 
-    //Response to command
-    const button = new MessageButton()
+    //'Download' button
+    const downloadButtonId = 'getlink-' + result.imdbId + '-' + randomid;
+    const uniqueDownloadButtonFilter = filterInteraction => filterInteraction.isButton() && (filterInteraction.customId == downloadButtonId);
+    const uniqueDownloadButtonCollector = interaction.channel.createMessageComponentCollector({filter: uniqueDownloadButtonFilter, max: 1});
+    uniqueDownloadButtonCollector.on('collect', async collectorInteraction => {
+      return await downloadButtonInterractionCollector(result, uniqueDownloadButtonCollector, collectorInteraction);
+    });
+    uniqueDownloadButtonCollector.on('end', collected => console.log(`Collected ${collected.size} items`));
+    
+    const downloadButton = new MessageButton()
       .setCustomId('getlink-' + result.imdbId + '-' + randomid)
       .setLabel('Obtenir un lien de telechargement')
       .setStyle('PRIMARY');
-    
+
+    //'👍', '👎' buttons
+    const thumbsUpButton = makeUniqueThumbsUpButton(result, interaction);
+    const thumbsDownButton = makeUniqueThumbsDownButton(result, interaction);
+
     const row = new MessageActionRow()
       .addComponents(
-        button
+        downloadButton, thumbsUpButton, thumbsDownButton
       );
     
+    // Message Fields
     var fields = [];
      
     if(result.genres && result.genres.length > 0) {
@@ -201,7 +300,7 @@ module.exports = {
       fields.push({ name: 'Studio', value: result.studio, inline: true});
     }
 
-    //tmdb more info
+    //more fields: tmdb more info
     try {
       const args = {
         pathParameters: {
@@ -233,7 +332,7 @@ module.exports = {
     } catch (error) {
       console.error(error);
     }
-  
+    
     const movieEmbed = new MessageEmbed()
       .setColor('#0099ff')
       .setTitle(result.title)
@@ -242,8 +341,10 @@ module.exports = {
       .setThumbnail(result.remotePoster)
       .addFields(fields);
 
+    //Actual response to command
     const msg = await interaction.reply({content: `Film: ${result.title}`, embeds: [movieEmbed], components: PERMIT_DL ? [row]:[], ephemeral: false, fetchReply: true});
     
+    //Another message if reactions
     const reactions = await api.getReactions({movieId: result.imdbId.replace('tt', '')});
     console.log(reactions);
     if(reactions && reactions.length>0) {
