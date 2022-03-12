@@ -50,7 +50,7 @@ const thumbsUpButtonInterractionCollector = async (result, collector, interactio
       userId: interaction.user.id,
       emoji: '👎'
     });
-    interaction.message.reply(`<@${interaction.user.id}>> Merci pour l'avis, c'est noté !`);
+    interaction.channel.send({content: `${interaction.user.username}> Merci pour l'avis, c'est noté !`, ephemeral: true});
   } catch (error) {
     console.error(error);
   }
@@ -89,7 +89,7 @@ const thumbsDownButtonInterractionCollector = async (result, collector, interact
       userId: interaction.user.id,
       emoji: '👍'
     });
-    interaction.message.reply(`<@${interaction.user.id}>> Merci pour l'avis, c'est noté !`);
+    interaction.channel.send({content: `${interaction.user.username}> Merci pour l'avis, c'est noté !`, ephemeral: true});
   } catch (error) {
     console.error(error);
   }
@@ -235,7 +235,7 @@ const downloadButtonInterractionCollector = async (result, collector, i) => {
         buttonDownloaded, buttonUrl, thumbsUpButton, thumbsDownButton
       );
       await i.message.edit({ embeds: i.message.embeds , components: [rowDownloaded] });
-      await i.message.reply(`Télechargement de ${result.title} terminé, lien disponible !`); 
+      await i.message.reply(`Téléchargement de ${result.title} terminé, lien disponible !`); 
       collector.stop();
     });
 
@@ -351,11 +351,11 @@ module.exports = {
       const reactionsContent = [];
       reactions.forEach((reaction) => {
         if(reaction.emoji && reaction.reaction) {
-          reactionsContent.push(`${reaction.emoji} "${reaction.reaction}" -<@${reaction.user.id}>`);
+          reactionsContent.push(`${reaction.emoji} "${reaction.reaction}" -${reaction.user.username}`);
         } else if (reaction.reaction) {
-          reactionsContent.push(`"${reaction.reaction}" -<@${reaction.user.id}>`);
+          reactionsContent.push(`"${reaction.reaction}" -${reaction.user.username}`);
         } else if (reaction.emoji) {
-          reactionsContent.push(`${reaction.emoji} -<@${reaction.user.id}>`);
+          reactionsContent.push(`${reaction.emoji} -${reaction.user.username}`);
         }
       });   
       msg.channel.send({content: reactionsContent.join('\n'), ephemeral: false, fetchReply: false});
