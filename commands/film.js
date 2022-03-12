@@ -50,7 +50,7 @@ const thumbsUpButtonInterractionCollector = async (result, collector, interactio
       userId: interaction.user.id,
       emoji: '👎'
     });
-    interaction.channel.send({content: `${interaction.user.username}> Merci pour l'avis, c'est noté !`, ephemeral: true});
+    //interaction.channel.send({content: `${interaction.user.username}> Merci pour l'avis, c'est noté !`, ephemeral: true});
   } catch (error) {
     console.error(error);
   }
@@ -89,7 +89,7 @@ const thumbsDownButtonInterractionCollector = async (result, collector, interact
       userId: interaction.user.id,
       emoji: '👍'
     });
-    interaction.channel.send({content: `${interaction.user.username}> Merci pour l'avis, c'est noté !`, ephemeral: true});
+    //interaction.channel.send({content: `${interaction.user.username}> Merci pour l'avis, c'est noté !`, ephemeral: true});
   } catch (error) {
     console.error(error);
   }
