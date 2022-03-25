@@ -108,6 +108,7 @@ const downloadButtonInterractionCollector = async (result, collector, i) => {
       size: result.movieFile.size,
       type: result.type||'?',
     });
+    console.log(newlink);
     if(!newlink) {
       console.log('Error while adding link');
       return;
